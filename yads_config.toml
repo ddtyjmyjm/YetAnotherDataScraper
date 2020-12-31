@@ -1,0 +1,5 @@
+[management]
+# 需要搜刮的资源目录
+resource_folder = 'resrc/'
+# 整理好的资源目录
+managed_folder = 'scraped/'
