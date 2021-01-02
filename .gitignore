@@ -4,6 +4,6 @@ build
 dist
 venv
 .venv
-
+**/*.DS_Store
 resrc
 scraped
