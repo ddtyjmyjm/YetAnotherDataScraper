@@ -1,6 +1,5 @@
 from src.scrapers import u15dvdinfo
 import pathlib
-import os
 import shutil
 import xml.etree.cElementTree as eT
 import click
@@ -11,6 +10,15 @@ class Manage:
 
     def __init__(self, config):
         self.config = config
+        self.u15 = u15dvdinfo.U15DVDInfo()
+
+    def scan_movies(self):
+        rsrc_path = pathlib.Path(self.config.resource_folder())
+        suffixes = self.config.detect_suffixes()
+        escapes = self.config.escape_folders()
+        movie_list = [path for path in rsrc_path.glob("**/*")
+                      if path.suffix in suffixes and path.stem not in escapes]
+        return movie_list
 
     def _get_actors_str(self, information):
         try:
@@ -40,7 +48,7 @@ class Manage:
         if img.status_code == 200:
             img.raw.decode_content = True
             content_type = img.headers['Content-Type'].split('/')[1]  # todo: better solution
-            out_path = os.path.join(path, '{}.{}'.format(information.get('number'), content_type))
+            out_path = pathlib.Path(path, '{}.{}'.format(information.get('number'), content_type))
             with open(out_path, 'wb') as f:
                 shutil.copyfileobj(img.raw, f)
 
@@ -61,7 +69,7 @@ class Manage:
         tree = eT.ElementTree(root)
 
         try:
-            tree.write(os.path.join(path, information.get('number') + '.nfo'), encoding="UTF-8")
+            tree.write(pathlib.Path(path, information.get('number') + '.nfo'), encoding="UTF-8")
         except Exception as e:
             click.echo("Writing nfo failed!")
             click.echo(e)
@@ -72,21 +80,23 @@ class Manage:
         # todo
         pass
 
-    def get_metadata_and_manage(self, string):
+    def manage_main_mode(self):
         # todo: remove or explict usage
-        u15 = u15dvdinfo.U15DVDInfo()
-        raw_metadata = u15.get_result(string)
 
-        path = self._get_output_path(raw_metadata)
-        try:
-            path.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            click.echo("Create success folder failed!")
-            click.echo(e)
+        for path in self.scan_movies():
+            number = path.stem
+            # todo: analysis title to number
+            raw_metadata = self.u15.get_result(number)
 
-        self.write_kodi_nfo(raw_metadata, path)
+            path = self._get_output_path(raw_metadata)
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                click.echo("Create success folder failed!")
+                click.echo(e)
 
-        self.write_poster(raw_metadata, path)
+            self.write_kodi_nfo(raw_metadata, path)
 
-        print("finished")
-        return raw_metadata
+            self.write_poster(raw_metadata, path)
+
+            print("finished")

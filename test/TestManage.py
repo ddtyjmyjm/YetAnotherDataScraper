@@ -9,4 +9,4 @@ class TestManage(unittest.TestCase):
         config_f = config.Config('./yads_config.tom')
 
         m = manage.Manage(config_f)
-        m.get_metadata_and_manage('ICDV-30245')
+        m.manage_main_mode()
