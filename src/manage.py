@@ -2,6 +2,7 @@ from src.scrapers import u15dvdinfo
 import pathlib
 import shutil
 import xml.etree.cElementTree as eT
+import re
 import click
 import requests
 
@@ -12,13 +13,22 @@ class Manage:
         self.config = config
         self.u15 = u15dvdinfo.U15DVDInfo()
 
-    def scan_movies(self):
+    def scan_movies(self) -> list:
+        """
+        Scan movies from resource folder (loaded from config).
+        Escape specified folders.
+        """
         rsrc_path = pathlib.Path(self.config.resource_folder())
         suffixes = self.config.detect_suffixes()
         escapes = self.config.escape_folders()
         movie_list = [path for path in rsrc_path.glob("**/*")
                       if path.suffix in suffixes and path.stem not in escapes]
         return movie_list
+
+    def parse_number(self, title):
+        # todo: analysis title more safely and efficiency
+        pattern = r'[a-zA-Z0-9]{1,}(-|_)[0-9]{1,}'
+        return re.search(pattern, title).group(0)
 
     def _get_actors_str(self, information):
         try:
@@ -76,6 +86,12 @@ class Manage:
         # print test
         # todo: show pretty xml
 
+    def move_file_to_path(self, information,  rsrc: pathlib.Path, dist_folder: pathlib.PurePath):
+        # todo: choose rename or not or there mode behaviour
+        name = information.get("number") + rsrc.suffix
+        dist = dist_folder.joinpath(name)
+        rsrc.replace(dist)
+
     def write_symlink_file(self, information, url):
         # todo
         pass
@@ -83,20 +99,21 @@ class Manage:
     def manage_main_mode(self):
         # todo: remove or explict usage
 
-        for path in self.scan_movies():
-            number = path.stem
-            # todo: analysis title to number
+        for rsrc_path in self.scan_movies():
+            number = self.parse_number(rsrc_path.stem)
             raw_metadata = self.u15.get_result(number)
 
-            path = self._get_output_path(raw_metadata)
             try:
-                path.mkdir(parents=True, exist_ok=True)
+                dist_folder_path = self._get_output_path(raw_metadata)
+                dist_folder_path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
-                click.echo("Create success folder failed!")
+                click.echo("Create scraped folder failed!")
                 click.echo(e)
+                from os import sys, EX_UNAVAILABLE
+                sys.exit(EX_UNAVAILABLE)
 
-            self.write_kodi_nfo(raw_metadata, path)
-
-            self.write_poster(raw_metadata, path)
+            self.write_kodi_nfo(raw_metadata, dist_folder_path)
+            self.write_poster(raw_metadata, dist_folder_path)
+            self.move_file_to_path(raw_metadata, rsrc_path, dist_folder_path)
 
             print("finished")

@@ -7,7 +7,7 @@ class Config:
     def __init__(self, file):
         try:
             self.config = toml.load(file)
-            click.echo("Loading config from " + file.name)
+            click.echo("Loading config from " + file)
 
         except:
             self.config = None
