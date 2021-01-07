@@ -15,6 +15,8 @@ class U15DVDInfo:
             'number': None,
             'plot': None,
             'date': None,
+            'country': 'Japan',
+            'mpaa': 'R18',
             'poster_url': None,
             'actors': []
         }
