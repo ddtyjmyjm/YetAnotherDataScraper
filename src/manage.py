@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import re
 import click
 import requests
-
+from PIL import Image
 
 class Manage:
 
@@ -64,7 +64,6 @@ class Manage:
         result = None
         for path in rsrc_path.glob("**/*"):
             if path.suffix not in suffixes \
-                    or path.stem in escapes \
                     or path.match("._*.*"):   # afs file
                 continue
 
@@ -75,18 +74,31 @@ class Manage:
                 result[number] += [path]
         return result
 
+
     def write_assets(self, information, path):
         """Write posters, thumbs, fan arts ......"""
 
         url = information.get("poster_url")
 
         img = requests.get(url, stream=True)
-        if img.status_code == 200:
-            img.raw.decode_content = True
-            content_type = img.headers['Content-Type'].split('/')[1]  # todo: better solution
-            out_path = pathlib.PurePath(path, 'poster.' + content_type)
-            with open(out_path, 'wb') as f:
-                shutil.copyfileobj(img.raw, f)
+        if img.status_code != 200:
+            return
+
+        img_thumb = Image.open(img.raw)
+        img.raw.decode_content = True
+        content_type = img.headers['Content-Type'].split('/')[1]  # todo: better solution
+        img_thumb.save(pathlib.Path(path, 'thumb.' + content_type))  # poster
+        try:
+            # todo: smarter solution
+            w = img_thumb.width
+            h = img_thumb.height
+            img2 = img_thumb.crop((int(0.9386*h), 0, w, h))
+            img2.save(pathlib.Path(path, 'poster.' + content_type))  # thumbnail
+            print('[+]Image Cutted!')
+        except Exception as e:
+            print('[-]Cover cut failed!')
+            print(e)
+
 
     def write_kodi_nfo(self, information, path):
         """Write the provided information to movie.nfo."""
