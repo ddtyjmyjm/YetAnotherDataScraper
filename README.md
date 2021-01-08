@@ -1,7 +1,7 @@
 # YADS
 Yet Another Data Scraper
 
-# build
+# Build
 > :warning: `python3` >= 3.8 is required. Otherwise, unknown behavior may occur. 
 
 If pip >= 19.0
