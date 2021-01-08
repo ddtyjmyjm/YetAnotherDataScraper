@@ -24,7 +24,7 @@ def scrape(config_file, resource):
     config_f = config.Config(config_file)
     if resource:
         # defined in option
-        config_f.resource_folder = (lambda _: resource)
+        config_f.resource_folder = (lambda: resource)
     manage_f = manage.Manage(config_f)
 
     manage_f.manage_main_mode()

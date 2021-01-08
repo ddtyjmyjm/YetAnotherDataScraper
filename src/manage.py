@@ -1,11 +1,14 @@
 from src.scrapers import u15dvdinfo
+
+import sys
 import pathlib
-import shutil
 import xml.etree.ElementTree as ET
 import re
+
 import click
 import requests
 from PIL import Image
+
 
 class Manage:
 
@@ -44,6 +47,9 @@ class Manage:
         Escape specified folders.
         """
         rsrc_path = pathlib.Path(self.config.resource_folder())
+        if not rsrc_path.exists():
+            sys.exit("Resource folder is not exist or cannot be accessed!")
+
         suffixes = self.config.detect_suffixes()
         escapes = self.config.escape_folders()
         movie_list = [path for path in rsrc_path.glob("**/*")
@@ -63,17 +69,16 @@ class Manage:
 
         result = None
         for path in rsrc_path.glob("**/*"):
-            if path.suffix not in suffixes \
-                    or path.match("._*.*"):   # afs file
-                continue
-
-            number = self.parse_number(path.stem)
-            if result is None:
-                result = {number: [path]}
-            else:
-                result[number] += [path]
+            if path.suffix in suffixes and not path.match("._*.*"):  # afs file
+                number = self.parse_number(path.stem)
+                if result is None:
+                    result = {number: [path]}
+                else:
+                    try:
+                        result[number] += [path]
+                    except TypeError:
+                        result[number] = [path]
         return result
-
 
     def write_assets(self, information, path):
         """Write posters, thumbs, fan arts ......"""
@@ -92,13 +97,12 @@ class Manage:
             # todo: smarter solution
             w = img_thumb.width
             h = img_thumb.height
-            img2 = img_thumb.crop((int(0.9386*h), 0, w, h))
+            img2 = img_thumb.crop((int(0.9386 * h), 0, w, h))
             img2.save(pathlib.Path(path, 'poster.' + content_type))  # thumbnail
             print('[+]Image Cutted!')
         except Exception as e:
             print('[-]Cover cut failed!')
             print(e)
-
 
     def write_kodi_nfo(self, information, path):
         """Write the provided information to movie.nfo."""
@@ -151,7 +155,11 @@ class Manage:
     def manage_main_mode(self):
         # todo: remove or explict usage
 
-        for rsrc in self.scan_movies_and_analyze().items():
+        item_list = self.scan_movies_and_analyze()
+        if not item_list:
+            click.echo("There are not any movies.")
+            return
+        for rsrc in item_list.items():
             number = rsrc[0]
             path_list = rsrc[1]
             raw_metadata = self.u15.get_result(number)
@@ -162,8 +170,7 @@ class Manage:
             except Exception as e:
                 click.echo("Create scraped folder failed!")
                 click.echo(e)
-                from os import sys, EX_UNAVAILABLE
-                sys.exit(EX_UNAVAILABLE)
+                return
 
             self.write_kodi_nfo(raw_metadata, dist_folder_path)
             self.write_assets(raw_metadata, dist_folder_path)
