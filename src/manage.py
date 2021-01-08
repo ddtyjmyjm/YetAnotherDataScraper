@@ -76,7 +76,7 @@ class Manage:
                 else:
                     try:
                         result[number] += [path]
-                    except TypeError:
+                    except KeyError:
                         result[number] = [path]
         return result
 
