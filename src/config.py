@@ -10,7 +10,7 @@ class Config:
             print(f"Loading config from {file}")
 
         except Exception as e:
-            print(f"Loading {file} config is failed.")
+            print(f"Loading user config failed.")
 
         with open(self.DEFAULT_CONFIG_FILE) as file:
             self.default_config = toml.load(file)
