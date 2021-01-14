@@ -5,7 +5,6 @@ import pathlib
 import xml.etree.ElementTree as ET
 import re
 
-import click
 import requests
 from PIL import Image
 
@@ -106,7 +105,7 @@ class Manage:
 
     def write_kodi_nfo(self, information, path):
         """Write the provided information to movie.nfo."""
-        click.echo("Writing movie.nfo...")
+        print("Writing movie.nfo...")
         root = ET.Element("movie")
         ET.SubElement(root, "title").text = information.get("title")
         ET.SubElement(root, "originaltitle").text = information.get("title")
@@ -125,8 +124,8 @@ class Manage:
         try:
             tree.write(pathlib.Path(path, information.get('number') + '.nfo'), encoding="UTF-8")
         except Exception as e:
-            click.echo("Writing nfo failed!")
-            click.echo(e)
+            print("Writing nfo failed!")
+            print(e)
         # print test
         # todo: show pretty xml
 
@@ -157,7 +156,7 @@ class Manage:
 
         item_list = self.scan_movies_and_analyze()
         if not item_list:
-            click.echo("There are not any movies.")
+            print("There are not any movies.")
             return
         for rsrc in item_list.items():
             number = rsrc[0]
@@ -168,8 +167,8 @@ class Manage:
                 dist_folder_path = self._get_output_path(raw_metadata)
                 dist_folder_path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
-                click.echo("Create scraped folder failed!")
-                click.echo(e)
+                print("Create scraped folder failed!")
+                print(e)
                 return
 
             self.write_kodi_nfo(raw_metadata, dist_folder_path)

@@ -1,31 +1,34 @@
-from . import manage
-from . import config
-import click
-
-CONFIG_FILE = './yads_config.toml'
+from src import config, manage
+import argparse
 
 
-@click.group()
-def cli():
+def parse_args(args=None):
+    """Parsing args. Explict 'args' argument for testing."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', type=argparse.FileType('r', encoding='UTF-8'))
+    parser.add_argument('-r', '--resource')
+    return parser.parse_args(args)
+
+
+def main():
     """
     Grating
     """
-    click.echo('YADS')
+    print('YADS')
 
+    args = parse_args()
 
-@cli.command()
-@click.option('-c', '--config', 'config_file', type=click.File(encoding='UTF-8'))
-@click.option('-r', '--resource', 'resource', type=click.Path(exists=True))
-def scrape(config_file, resource):
-    """
-    Main command. Scrape info from folder or a file.
-    """
-
+    config_file = None
+    if args.config:
+        config_file = args.config
     config_f = config.Config(config_file)
-    if resource:
-        # defined in option
-        config_f.resource_folder = (lambda: resource)
-    manage_f = manage.Manage(config_f)
 
+    if args.resource:
+        config_f.resource_folder = (lambda: args.resource)
+
+    manage_f = manage.Manage(config_f)
     manage_f.manage_main_mode()
-    # todo: remove file or create symlink
+
+
+if __name__ == '__main__':
+    main()
