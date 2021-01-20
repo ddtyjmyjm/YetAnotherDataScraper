@@ -40,10 +40,6 @@ class U15DVDInfo:
         """Get product url from title."""
         return '{}/products/{}'.format(self.__base_url, number)
 
-    def number_to_p_url(self, number):
-        """Get product picture url from title."""
-        return 'http://u15dvd.jpn.org/p_image/{}'.format(number)
-
     def scrap_product_metadata(self, url):
         """Scrap product's metadata through confirmed url"""
 
@@ -53,6 +49,9 @@ class U15DVDInfo:
         soup = BeautifulSoup(page, 'html.parser')
         text_body = soup.find(class_="textBody")
         metadata = self._metadata()
+        if '<p>　申し訳ありませんが、指定するページは表示できません。URL指定が間違っているか、まだ作成されていない商品ページ等の可能性があります。</p>' in text_body.contents:
+            return None
+
         metadata['poster_url'] = text_body.find(class_="p_image").find('img').get('src')
         metadata['plot'] = text_body.find(class_="description").get_text()
         pro_info = text_body.find(class_="pro_info")
@@ -76,12 +75,28 @@ class U15DVDInfo:
 
         return metadata
 
-    def get_result(self, text):
-        index_url = self.search_product_url(text)  # todo: more regex
-        if index_url is None:
-            return None
+    def get_result(self, text, mode=None):
+
+        if mode == 'direct':
+            return self.scrap_product_metadata(self.number_to_url(text))
+        elif mode == 'auto':
+            # step 1 direct scrape
+            result = self.scrap_product_metadata(self.number_to_url(text))
+            if result:
+                return result
+
+            # step 2 fuzzy search
+            index_url = self.search_product_url(text)
+            if index_url is None:
+                return None
+            else:
+                return self.scrap_product_metadata(index_url)
         else:
-            return self.scrap_product_metadata(index_url)
+            index_url = self.search_product_url(text)  # todo: more regex
+            if index_url is None:
+                return None
+            else:
+                return self.scrap_product_metadata(index_url)
 
 
 if __name__ == "__main__":

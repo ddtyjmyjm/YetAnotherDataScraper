@@ -161,8 +161,11 @@ class Manage:
         for rsrc in item_list.items():
             number = rsrc[0]
             path_list = rsrc[1]
-            raw_metadata = self.u15.get_result(number)
-
+            raw_metadata = self.u15.get_result(number, mode='direct')
+            if raw_metadata:
+                print(f"Process item : {rsrc}")
+            else:
+                print(f"process {rsrc} failed.")
             try:
                 dist_folder_path = self._get_output_path(raw_metadata)
                 dist_folder_path.mkdir(parents=True, exist_ok=True)
