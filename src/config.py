@@ -34,3 +34,12 @@ class Config:
 
     def escape_folders(self) -> list[str]:
         return self.get_attr('rule', "escape_folders")
+
+    def scrapers(self):
+        scraper_list = self.get_attr('rule', 'scrapers')
+        scrapers_obj = list()
+        for s in scraper_list:
+            if s.lower() == 'u15dvdinfo':
+                from scrapers import u15dvdinfo
+                scrapers_obj.append(u15dvdinfo.U15DVDInfo)
+        return scrapers_obj

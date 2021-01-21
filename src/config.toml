@@ -9,3 +9,4 @@ detect_suffixes = ['.webm', '.mkv', '.flv', '.avi', '.mts', '.m2ts', '.ts', '.3g
     '.wmv', '.rmvb', '.mp4', '.m4p', '.m4v', '.mpg', '.mpeg', '.mpv', '.m2v', '.iso']
 
 escape_folders = ['scraped/']
+scrapers = ['u15dvdinfo']

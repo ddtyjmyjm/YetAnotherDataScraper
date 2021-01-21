@@ -1,5 +1,3 @@
-from src.scrapers import u15dvdinfo
-
 import sys
 import pathlib
 import xml.etree.ElementTree as ET
@@ -13,7 +11,10 @@ class Manage:
 
     def __init__(self, config):
         self.config = config
-        self.u15 = u15dvdinfo.U15DVDInfo()
+        self.scrapers = config.scrapers()
+        if not self.scrapers:
+            print("Error! No scraper plugin loaded!")
+            sys.exit()
 
     def parse_number(self, title):
         # todo: analysis title more safely and efficiency
@@ -161,7 +162,8 @@ class Manage:
         for rsrc in item_list.items():
             number = rsrc[0]
             path_list = rsrc[1]
-            raw_metadata = self.u15.get_result(number, mode='direct')
+            scraper = self.scrapers[0]()
+            raw_metadata = scraper.get_result(number, mode='direct')
             if raw_metadata:
                 print(f"Process item : {rsrc}")
             else:
