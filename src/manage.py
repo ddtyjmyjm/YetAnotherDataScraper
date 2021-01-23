@@ -22,10 +22,8 @@ class Manage:
         return re.search(pattern, title).group(0)
 
     def _get_actors_str(self, information):
-        try:
-            actor_str = ','.join(information.get('actors'))
-        except:
-            actor_str = information.get('actors')[0]['name']
+        name_list = [actor['name'] for actor in information['actors']]
+        actor_str = ', '.join(name_list)
         return actor_str
 
     def _get_output_path(self, information):
@@ -108,9 +106,9 @@ class Manage:
         """Write the provided information to movie.nfo."""
         print("Writing movie.nfo...")
         root = ET.Element("movie")
-        ET.SubElement(root, "title").text = information.get("title")
-        ET.SubElement(root, "originaltitle").text = information.get("title")
-        ET.SubElement(root, "sorttitle").text = '[{}] {} '.format(information.get("number"), information.get("title"))
+        ET.SubElement(root, "title").text = f"{information.get('number')} - {information.get('title')}"
+        ET.SubElement(root, "originaltitle").text = f"{information.get('number')} - {information.get('title')}"
+        ET.SubElement(root, "sorttitle").text = f'[{information.get("number")}] {information.get("title")} '
         ET.SubElement(root, "premiered").text = information.get("premiered")  # KODI NFO standard
         ET.SubElement(root, "releasedate").text = information.get("premiered")  # Jellyfin readable NFO
         ET.SubElement(root, "country").text = information.get("country")
