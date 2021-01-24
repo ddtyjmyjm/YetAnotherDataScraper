@@ -43,3 +43,10 @@ class Config:
                 from scrapers import u15dvdinfo
                 scrapers_obj.append(u15dvdinfo.U15DVDInfo)
         return scrapers_obj
+
+    def scraper_mode(self):
+        mode = self.get_attr('rule', 'scraper_mode')
+        if mode != 'direct' and mode != 'auto':
+            return 'auto'
+        else:
+            return mode

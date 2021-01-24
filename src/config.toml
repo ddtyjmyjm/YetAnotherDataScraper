@@ -5,8 +5,12 @@ resource_folder = 'resrc/'
 managed_folder = 'scraped/'
 
 [rule]
+# 扫描的文件后缀
 detect_suffixes = ['.webm', '.mkv', '.flv', '.avi', '.mts', '.m2ts', '.ts', '.3gp', '.mov',
     '.wmv', '.rmvb', '.mp4', '.m4p', '.m4v', '.mpg', '.mpeg', '.mpv', '.m2v', '.iso']
-
+# 略过的文件夹（暂未实现）
 escape_folders = ['scraped/']
+# 爬虫插件
 scrapers = ['u15dvdinfo']
+# 爬虫模式 精确度 direct：完全精确（通过番号直接读取）    auto：一般精确（通过网站搜索引擎）    其他：默认为auto
+scraper_mode = 'direct'

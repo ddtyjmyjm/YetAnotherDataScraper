@@ -157,11 +157,13 @@ class Manage:
         if not item_list:
             print("There are not any movies.")
             return
+
+        # todo: atomic operation
         for rsrc in item_list.items():
             number = rsrc[0]
             path_list = rsrc[1]
             scraper = self.scrapers[0]()
-            raw_metadata = scraper.get_result(number, mode='direct')
+            raw_metadata = scraper.get_result(number, mode=self.config.scraper_mode())
             if raw_metadata:
                 print(f"Process item : {rsrc}")
             else:
